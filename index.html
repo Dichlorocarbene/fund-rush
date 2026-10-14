@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080b10">
+<title>Fund Rush</title>
+<style>
+:root{
+  --bg:#080b10;
+  --panel:#0e141c;
+  --panel2:#121a24;
+  --line:#1b2735;
+  --up:#ff4d6d;      /* 涨 → 红 */
+  --down:#22e08a;    /* 跌 → 绿 */
+  --gold:#ffcc4d;
+  --text:#c8d6e5;
+  --dim:#5a6b7d;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  height:100%;background:#05070a;overflow:hidden;
+  font-family:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  color:var(--text);
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+body{display:flex;align-items:center;justify-content:center}
+
+#app{
+  position:relative;
+  width:100%;max-width:430px;height:100%;max-height:900px;
+  background:var(--bg);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:0 0 60px rgba(0,0,0,.8);
+}
+@media(min-width:460px){
+  #app{border-radius:18px;border:1px solid #1b2735}
+}
+
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  background:var(--bg);
+}
+.hidden{display:none !important}
+
+/* ---------- 开始界面 ---------- */
+#startScreen{
+  justify-content:center;align-items:center;
+  padding:28px 22px;
+  background:radial-gradient(120% 80% at 50% 0%,#101c28 0%,#080b10 60%);
+}
+.start-inner{width:100%;max-width:340px;text-align:center}
+.start-logo{
+  font-size:44px;color:var(--up);letter-spacing:-2px;
+  text-shadow:0 0 22px rgba(255,77,109,.45);
+  margin-bottom:6px;
+}
+#startScreen h1{
+  font-size:30px;letter-spacing:3px;color:#eaf4ff;margin-bottom:8px;
+  text-shadow:0 0 16px rgba(255,77,109,.25);
+}
+.sub{color:var(--dim);font-size:12.5px;line-height:1.7;margin-bottom:22px}
+.rules{
+  list-style:none;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;margin-bottom:24px;
+}
+.rules li{
+  font-size:12px;color:#8fa3b8;line-height:1.9;padding-left:14px;position:relative;
+}
+.rules li::before{
+  content:"▸";position:absolute;left:0;color:var(--up);font-size:10px;
+}
+.big-btn{
+  width:100%;padding:16px;
+  background:linear-gradient(180deg,#ff5d7b,#c8203c);
+  border:none;border-radius:8px;
+  color:#1a0208;font-family:inherit;font-weight:700;font-size:17px;letter-spacing:3px;
+  cursor:pointer;
+  box-shadow:0 6px 0 #7a1226,0 0 24px rgba(255,77,109,.3);
+  transition:transform .08s,box-shadow .08s;
+}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #7a1226}
+
+/* ---------- 游戏界面 ---------- */
+#gameScreen{padding:8px;gap:6px}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;height:44px;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;letter-spacing:1px}
+.brand .logo{
+  color:var(--up);font-size:15px;
+  text-shadow:0 0 10px rgba(255,77,109,.6);
+}
+.brand .name{color:#dfeaf6}
+.cash-box{text-align:right;line-height:1.15}
+.cash-box .lbl{font-size:9px;color:var(--dim);letter-spacing:1px}
+.cash-box .val{font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+
+/* 通知栏 */
+.noticebar{
+  height:32px;flex-shrink:0;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;padding:0 10px;
+  transition:border-color .25s,background .25s;
+}
+.noticebar.up{border-color:rgba(255,77,109,.6);background:rgba(255,77,109,.07)}
+.noticebar.down{border-color:rgba(34,224,138,.6);background:rgba(34,224,138,.07)}
+.notice-text{
+  font-size:11.5px;color:#8fa3b8;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;
+}
+.notice-text.up{color:var(--up)}
+.notice-text.down{color:var(--down)}
+@keyframes noticePop{
+  0%{transform:translateY(-8px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+
+/* 图表 */
+.chart-area{
+  flex:1;min-height:0;position:relative;
+  background:#070a0f;border:1px solid var(--line);border-radius:8px;
+  overflow:hidden;
+}
+#chart{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.chart-tag{
+  position:absolute;top:6px;left:8px;
+  font-size:10px;color:var(--dim);letter-spacing:1px;
+  pointer-events:none;
+}
+.chart-price{
+  position:absolute;top:4px;right:8px;
+  font-size:14px;font-weight:700;letter-spacing:.5px;
+  pointer-events:none;
+  text-shadow:0 0 10px currentColor;
+}
+
+/* 状态条 */
+.stats{
+  display:flex;gap:6px;flex-shrink:0;
+}
+.stat{
+  flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:6px 8px;text-align:center;line-height:1.25;
+}
+.stat label{display:block;font-size:9px;color:var(--dim);letter-spacing:1px;margin-bottom:2px}
+.stat span{font-size:13px;font-weight:700;color:#dfeaf6}
+#timerDisplay{color:var(--gold)}
+#levBadge{
+  display:inline-block;margin-left:5px;font-size:9px;padding:1px 5px;border-radius:4px;
+  background:rgba(255,77,109,.15);color:var(--up);border:1px solid rgba(255,77,109,.4);
+  vertical-align:middle;
+}
+
+/* 控制区 */
+.controls{
+  display:flex;align-items:stretch;gap:6px;flex-shrink:0;height:76px;
+}
+.trade{
+  flex:1;border:none;border-radius:8px;cursor:pointer;
+  font-family:inherit;font-weight:700;font-size:16px;letter-spacing:1px;
+  color:#04140c;
+  transition:transform .06s,filter .1s;
+  touch-action:none;user-select:none;
+}
+.trade:active{transform:translateY(3px);filter:brightness(1.15)}
+#buyBtn{
+  background:linear-gradient(180deg,#ff5d7b,#c8203c);
+  box-shadow:0 4px 0 #7a1226;color:#1a0208;
+}
+#sellBtn{
+  background:linear-gradient(180deg,#25e792,#12a264);
+  box-shadow:0 4px 0 #0a5c38;color:#04140c;
+}
+.holdinfo{
+  flex:1.05;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:9px;color:var(--dim);letter-spacing:1px;line-height:1.5;
+}
+.holdinfo div{font-size:14px;font-weight:700;color:#dfeaf6;letter-spacing:.5px}
+
+/* ---------- 升级弹窗 ---------- */
+.modal{
+  position:absolute;inset:0;z-index:50;
+  background:rgba(4,7,11,.86);
+  display:flex;align-items:center;justify-content:center;
+  padding:22px;
+  backdrop-filter:blur(3px);
+}
+.modal-box{
+  width:100%;max-width:340px;
+  background:var(--panel);border:1px solid #24384c;border-radius:12px;
+  padding:18px 16px;
+  box-shadow:0 0 40px rgba(0,0,0,.7),0 0 0 1px rgba(255,77,109,.08) inset;
+}
+.modal-title{
+  font-size:13px;letter-spacing:4px;color:var(--up);text-align:center;margin-bottom:4px;
+}
+.modal-sub{font-size:10px;color:var(--dim);text-align:center;margin-bottom:14px;letter-spacing:1px}
+.upgrade-btn{
+  display:block;width:100%;text-align:left;
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:13px 14px;margin-bottom:9px;cursor:pointer;
+  font-family:inherit;color:var(--text);
+  transition:border-color .15s,transform .08s,background .15s;
+}
+.upgrade-btn:last-child{margin-bottom:0}
+.upgrade-btn:active{transform:scale(.985);background:#16222f}
+.upgrade-btn:hover{border-color:rgba(255,77,109,.55)}
+.up-name{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:5px;letter-spacing:1px}
+.up-desc{font-size:11px;color:#7f95ab;line-height:1.6}
+
+/* ---------- 结束界面 ---------- */
+#overScreen{
+  padding:26px 22px;justify-content:center;align-items:center;
+  background:radial-gradient(120% 80% at 50% 0%,#1a1018 0%,#080b10 65%);
+}
+.over-inner{width:100%;max-width:340px;text-align:center}
+.over-title{font-size:22px;letter-spacing:5px;color:#eaf4ff;margin-bottom:4px}
+.over-reason{font-size:11px;color:var(--up);letter-spacing:2px;margin-bottom:20px}
+.over-final{
+  font-size:36px;font-weight:700;color:var(--gold);letter-spacing:1px;
+  text-shadow:0 0 24px rgba(255,204,77,.3);
+  line-height:1.1;
+}
+.over-label{font-size:10px;color:var(--dim);letter-spacing:3px;margin-bottom:6px}
+.over-profit{font-size:13px;margin:8px 0 18px;letter-spacing:1px}
+.over-profit.pos{color:var(--up)}    /* 盈利 → 红 */
+.over-profit.neg{color:var(--down)}  /* 亏损 → 绿 */
+#equityChart{
+  width:100%;height:120px;display:block;
+  background:#070a0f;border:1px solid var(--line);border-radius:8px;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  margin-bottom:20px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== 开始界面 ========== -->
+  <div class="screen" id="startScreen">
+    <div class="start-inner">
+      <div class="start-logo">[￥]</div>
+      <h1>FUND RUSH</h1>
+      <p class="sub">120 秒，1000 元本金，<br>在随机行情里赚到最多的钱。</p>
+      <ul class="rules">
+        <li>基金价格随机游走，每 5 秒触发一次行情事件</li>
+        <li>事件弹出后，价格会在 2 秒内完成涨跌</li>
+        <li>每 30 秒可从两个升级中二选一（不重复）</li>
+        <li>Buy / Sell 按钮支持长按连续交易</li>
+        <li>使用杠杆时，净值归零将立刻结束游戏</li>
+      </ul>
+      <button class="big-btn" id="startBtn">开 始 游 戏</button>
+    </div>
+  </div>
+
+  <!-- ========== 游戏界面 ========== -->
+  <div class="screen hidden" id="gameScreen">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">[￥]</span>
+        <span class="name">FUND RUSH</span>
+      </div>
+      <div class="cash-box">
+        <div class="lbl">总资产</div>
+        <div class="val" id="cashDisplay">￥1000.00</div>
+      </div>
+    </header>
+
+    <div class="noticebar" id="noticeBar">
+      <div class="notice-text" id="noticeText">市场开盘，祝你交易顺利</div>
+    </div>
+
+    <div class="chart-area">
+      <div class="chart-tag">FUND / CNY</div>
+      <div class="chart-price" id="chartPrice">￥10.00</div>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><label>持仓份额</label><span id="sharesDisplay">0.00</span></div>
+      <div class="stat"><label>剩余时间</label><span id="timerDisplay">120</span></div>
+      <div class="stat"><label>杠杆</label><span id="leverDisplay">1x</span></div>
+    </div>
+
+    <div class="controls">
+      <button class="trade" id="buyBtn">Buy!</button>
+      <div class="holdinfo">
+        持仓市值
+        <div id="holdDisplay">￥0.00</div>
+      </div>
+      <button class="trade" id="sellBtn">Sell!</button>
+    </div>
+
+    <!-- 升级弹窗 -->
+    <div class="modal hidden" id="upgradeModal">
+      <div class="modal-box">
+        <div class="modal-title">升 级 选 择</div>
+        <div class="modal-sub">二选一，效果不可重复</div>
+        <div id="upgradeOptions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 结束界面 ========== -->
+  <div class="screen hidden" id="overScreen">
+    <div class="over-inner">
+      <div class="over-title">GAME OVER</div>
+      <div class="over-reason" id="overReason">时间到</div>
+      <div class="over-label">最终资金</div>
+      <div class="over-final" id="overFinal">￥0.00</div>
+      <div class="over-profit" id="overProfit">+0.00 (0.00%)</div>
+      <canvas id="equityChart"></canvas>
+      <button class="big-btn" id="restartBtn">再 来 一 局</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   配置（可调整）
+   ========================================================= */
+const CONFIG = {
+  initialCash:    1000,    // 初始资金
+  initialPrice:   10,      // 基金初始价格
+  volatility:     0.01,    // 基础波动率（每 sqrt(秒)）
+  eventInterval:  5,       // 行情事件间隔（秒）
+  eventDuration:  3,       // 事件涨跌实现时间（秒）
+  gameDuration:   150,     // 游戏时长（秒）
+  maxTradePct:    0.10,    // 单次交易最大比例（总资金 * 杠杆 * 该值）
+  baseLeverage:   1,       // 基础杠杆
+  maxLeverage:    5,       // 场外杠杆后的杠杆
+  fps:            60,      // 刷新率（可调整）
+  chartWindow:    500,     // 行情图保留数据点数量
+  upgradeInterval:30,      // 升级出现间隔（秒）
+  pixelScale:     2,       // 像素化缩放倍数（改小可减弱像素风）
+  yPadding:       0.6,   // Y 轴上下各留出「数据跨度 * 该值」的空白，越大范围越宽
+};
+
+/* 涨跌配色（红涨绿跌） */
+const COLOR_UP   = "#ff4d6d";
+const COLOR_DOWN = "#22e08a";
+const FILL_UP    = "rgba(255,77,109,0.28)";
+const FILL_DOWN  = "rgba(34,224,138,0.28)";
+
+/* =========================================================
+   行情事件（5 正面 / 5 负面）
+   ========================================================= */
+const EVENTS = [
+  { name: "央行降准，流动性宽松",   impact:  0.032 },
+  { name: "北向资金大幅流入",       impact:  0.042 },
+  { name: "基金重仓股涨停",         impact:  0.050 },
+  { name: "行业利好政策出台",       impact:  0.045 },
+  { name: "明星经理发行新基金",     impact:  0.025 },
+  { name: "监管收紧，行业承压",     impact: -0.032 },
+  { name: "外资大举撤离",           impact: -0.042 },
+  { name: "重仓股闪崩",             impact: -0.050 },
+  { name: "突发重大利空",           impact: -0.045 },
+  { name: "基金经理离职传闻",       impact: -0.025 },
+];
+
+/* =========================================================
+   升级效果
+   ========================================================= */
+const UPGRADES = [
+  { id:"insider",    name:"内幕消息",  desc:"行情事件消息提前 1 秒通知",
+    apply(){ S.insider = true; } },
+  { id:"leverage",   name:"场外杠杆",  desc:"可以使用 5 倍杠杆进行交易",
+    apply(){ S.leverage = CONFIG.maxLeverage; } },
+  { id:"lottery",    name:"彩票中签",  desc:"立刻获得 1000 资金",
+    apply(){ S.cash += 1000; } },
+  { id:"tax",        name:"税收征管",  desc:"每次过出（卖出）交易需缴税 2%",
+    apply(){ S.taxRate = 0.02; } },
+  { id:"volatility", name:"市场波动",  desc:"市场整体波动率翻倍",
+    apply(){ S.volatility *= 2; } },
+  { id:"bulk",       name:"大宗交易",  desc:"每次交易的规模翻倍",
+    apply(){ S.tradeMult *= 2; } },
+];
+
+/* =========================================================
+   工具函数
+   ========================================================= */
+let _spareGauss = null;
+function gaussian(){
+  if(_spareGauss !== null){ const v = _spareGauss; _spareGauss = null; return v; }
+  let u = 0, v = 0;
+  while(u === 0) u = Math.random();
+  while(v === 0) v = Math.random();
+  const r = Math.sqrt(-2 * Math.log(u));
+  _spareGauss = r * Math.sin(2 * Math.PI * v);
+  return r * Math.cos(2 * Math.PI * v);
+}
+const fmt   = n => (Math.round(n * 100) / 100).toFixed(2);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* =========================================================
+   音效（尝试加载同目录音频文件，失败则用合成音）
+   ========================================================= */
+const SOUND_FILES = { buy: "buy.mp3", sell: "sell.mp3" };
+const loadedSounds = {};
+let audioCtx = null;
+
+(function preloadSounds(){
+  Object.keys(SOUND_FILES).forEach(key => {
+    const a = new Audio();
+    a.preload = "auto";
+    a.addEventListener("canplaythrough", () => { loadedSounds[key] = a; }, { once:true });
+    a.addEventListener("error", () => { /* 无文件则跳过 */ }, { once:true });
+    a.src = SOUND_FILES[key];
+    try { a.load(); } catch(e){}
+  });
+})();
+
+function beep(freq, dur, type, vol){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type || "square";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.05, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }catch(e){}
+}
+
+function playSound(key){
+  if(loadedSounds[key]){
+    try{
+      const node = loadedSounds[key].cloneNode();
+      node.volume = 0.5;
+      node.play().catch(()=>{});
+      return;
+    }catch(e){}
+  }
+  if(key === "buy")  beep(660, 0.08, "square", 0.045);
+  else               beep(330, 0.09, "square", 0.045);
+}
+
+/* =========================================================
+   游戏状态
+   ========================================================= */
+const S = {};
+
+function resetState(){
+  S.running        = false;
+  S.paused         = false;
+  S.time           = 0;
+  S.cash           = CONFIG.initialCash;
+  S.shares         = 0;
+  S.price          = CONFIG.initialPrice;
+  S.volatility     = CONFIG.volatility;
+  S.leverage       = CONFIG.baseLeverage;
+  S.tradeMult      = 1;
+  S.taxRate        = 0;
+  S.insider        = false;
+
+  S.history        = new Array(CONFIG.chartWindow).fill(CONFIG.initialPrice);
+  S.equityHistory  = [CONFIG.initialCash];
+  S.equityTimer    = 0;
+
+  S.shocks         = [];
+  S.nextEventTime  = CONFIG.eventInterval;
+  S.scheduledEvent = null;
+  S.nextUpgradeTime= CONFIG.upgradeInterval;
+  S.upgradesTaken  = [];
+
+  S.flashDir       = 0;
+  S.acc            = 0;
+  S.lastTs         = 0;
+}
+
+const equity   = () => S.cash + S.shares * S.price;
+const posValue = () => S.shares * S.price;
+
+/* =========================================================
+   DOM
+   ========================================================= */
+const $ = id => document.getElementById(id);
+
+const startScreen  = $("startScreen");
+const gameScreen   = $("gameScreen");
+const overScreen   = $("overScreen");
+const cashDisplay  = $("cashDisplay");
+const chartPrice   = $("chartPrice");
+const sharesDisplay= $("sharesDisplay");
+const timerDisplay = $("timerDisplay");
+const leverDisplay = $("leverDisplay");
+const holdDisplay  = $("holdDisplay");
+const noticeBar    = $("noticeBar");
+const noticeText   = $("noticeText");
+const chartCanvas  = $("chart");
+const chartCtx     = chartCanvas.getContext("2d");
+const equityCanvas = $("equityChart");
+const equityCtx    = equityCanvas.getContext("2d");
+const upgradeModal = $("upgradeModal");
+const upgradeOptions = $("upgradeOptions");
+
+/* =========================================================
+   通知栏
+   ========================================================= */
+let noticeTimer = null;
+function showNotice(text, dir){
+  noticeText.textContent = text;
+  noticeText.classList.remove("up","down");
+  noticeBar.classList.remove("up","down");
+  if(dir === 1){ noticeText.classList.add("up");  noticeBar.classList.add("up"); }
+  if(dir === -1){ noticeText.classList.add("down"); noticeBar.classList.add("down"); }
+
+  noticeText.style.animation = "none";
+  void noticeText.offsetWidth;
+  noticeText.style.animation = "noticePop .3s ease";
+
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    noticeBar.classList.remove("up","down");
+    noticeText.classList.remove("up","down");
+  }, 3500);
+}
+
+/* =========================================================
+   画布尺寸适配（像素风）
+   ========================================================= */
+function fitCanvas(canvas, scale){
+  const rect = canvas.getBoundingClientRect();
+  if(rect.width < 2 || rect.height < 2) return false;
+  const w = Math.max(40, Math.round(rect.width  / scale));
+  const h = Math.max(30, Math.round(rect.height / scale));
+  if(canvas.width !== w || canvas.height !== h){
+    canvas.width  = w;
+    canvas.height = h;
+  }
+  return true;
+}
+
+/* =========================================================
+   行情曲线绘制
+   ========================================================= */
+function drawChart(){
+  if(!fitCanvas(chartCanvas, CONFIG.pixelScale)) return;
+
+  const W = chartCanvas.width;
+  const H = chartCanvas.height;
+  const ctx = chartCtx;
+
+  ctx.fillStyle = "#070a0f";
+  ctx.fillRect(0, 0, W, H);
+
+  const hist = S.history;
+  if(hist.length < 2) return;
+
+  let mn = Infinity, mx = -Infinity;
+  for(let i = 0; i < hist.length; i++){
+    const p = hist[i];
+    if(p < mn) mn = p;
+    if(p > mx) mx = p;
+  }
+  // 数据跨度；若几乎无波动则给一个最小跨度，避免除零
+  let span = mx - mn;
+  const minSpan = S.price * 0.02;      // 最小跨度 = 当前价格的 2%
+  if(span < minSpan) span = minSpan;
+  
+  // 以数据中点为基准，按 yPadding 向上下扩展
+  const mid = (mx + mn) / 2;
+  const half = span / 2 + span * CONFIG.yPadding;
+  mn = mid - half;
+  mx = mid + half;
+  const range = mx - mn || 1;
+
+  const toX = i => (i / (hist.length - 1)) * W;
+  const toY = p => H - ((p - mn) / range) * H;
+
+  // 网格
+  ctx.strokeStyle = "#111a24";
+  ctx.lineWidth = 1;
+  for(let i = 1; i < 4; i++){
+    const y = Math.round(H * i / 4) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+
+  const rising = hist[hist.length - 1] >= hist[0];
+  const color  = rising ? COLOR_UP : COLOR_DOWN;
+  const fillA  = rising ? FILL_UP : FILL_DOWN;
+
+  // 面积填充
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(hist[0]));
+  for(let i = 1; i < hist.length; i++) ctx.lineTo(toX(i), toY(hist[i]));
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, fillA);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // 折线
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(hist[0]));
+  for(let i = 1; i < hist.length; i++) ctx.lineTo(toX(i), toY(hist[i]));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  // 末端光点
+  const lx = toX(hist.length - 1);
+  const ly = toY(hist[hist.length - 1]);
+  ctx.fillStyle = color;
+  ctx.fillRect(lx - 2, ly - 2, 4, 4);
+}
+
+/* =========================================================
+   资产曲线绘制（结束界面）
+   ========================================================= */
+function drawEquityChart(){
+  if(!fitCanvas(equityCanvas, CONFIG.pixelScale)) return;
+
+  const W = equityCanvas.width;
+  const H = equityCanvas.height;
+  const ctx = equityCtx;
+
+  ctx.fillStyle = "#070a0f";
+  ctx.fillRect(0, 0, W, H);
+
+  const data = S.equityHistory;
+  if(data.length < 2) return;
+
+  let mn = Infinity, mx = -Infinity;
+  for(let i = 0; i < data.length; i++){
+    if(data[i] < mn) mn = data[i];
+    if(data[i] > mx) mx = data[i];
+  }
+  mn = Math.min(mn, CONFIG.initialCash);
+  mx = Math.max(mx, CONFIG.initialCash);
+  // 数据跨度；若几乎无波动则给一个最小跨度，避免除零
+  let span = mx - mn;
+  const minSpan = S.price * 0.02;      // 最小跨度 = 当前价格的 2%
+  if(span < minSpan) span = minSpan;
+  
+  // 以数据中点为基准，按 yPadding 向上下扩展
+  const mid = (mx + mn) / 2;
+  const half = span / 2 + span * CONFIG.yPadding;
+  mn = mid - half;
+  mx = mid + half;
+  const range = mx - mn || 1;
+
+  const toX = i => (i / (data.length - 1)) * W;
+  const toY = v => H - ((v - mn) / range) * H;
+
+  // 初始资金基准线
+  const baseY = Math.round(toY(CONFIG.initialCash)) + 0.5;
+  ctx.strokeStyle = "#2b3a4a";
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(0, baseY);
+  ctx.lineTo(W, baseY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const rising = data[data.length - 1] >= CONFIG.initialCash;
+  const color  = rising ? COLOR_UP : COLOR_DOWN;
+
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(data[0]));
+  for(let i = 1; i < data.length; i++) ctx.lineTo(toX(i), toY(data[i]));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, rising ? "rgba(255,77,109,0.25)" : "rgba(34,224,138,0.25)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+/* =========================================================
+   交易逻辑
+   ========================================================= */
+function doBuy(){
+  if(!S.running || S.paused) return;
+  const eq = equity();
+  if(eq <= 0) return;
+
+  const maxPos   = eq * S.leverage;
+  const capByPct = eq * S.leverage * CONFIG.maxTradePct * S.tradeMult;
+  const capByPos = maxPos - posValue();
+  const amount   = Math.min(capByPct, capByPos);
+
+  if(amount <= 0.01){
+    beep(180, 0.05, "square", 0.03);
+    return;
+  }
+
+  S.shares += amount / S.price;
+  S.cash   -= amount;
+  playSound("buy");
+}
+
+function doSell(){
+  if(!S.running || S.paused) return;
+  const eq = equity();
+  if(eq <= 0) return;
+
+  const pos = posValue();
+  if(pos <= 0.01){
+    beep(180, 0.05, "square", 0.03);
+    return;
+  }
+
+  const capByPct = eq * S.leverage * CONFIG.maxTradePct * S.tradeMult;
+  const amount   = Math.min(capByPct, pos);
+  if(amount <= 0.01) return;
+
+  S.shares -= amount / S.price;
+  if(S.shares < 1e-9) S.shares = 0;
+
+  S.cash += amount * (1 - S.taxRate);
+  playSound("sell");
+}
+
+/* =========================================================
+   行情事件
+   ========================================================= */
+function pickEvent(){
+  const base = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+  const scale = clamp(S.volatility / CONFIG.volatility, 0.4, 3);
+  return { name: base.name, impact: base.impact * scale };
+}
+
+function applyEvent(ev){
+  // 已开启内幕消息：提前 1 秒已通知过，正式触发时不再重复弹出
+  if(!S.insider){
+    const dir = ev.impact > 0 ? 1 : -1;
+    showNotice((dir > 0 ? "▲ " : "▼ ") + ev.name, dir);
+  }
+  S.shocks.push({ m: 1 + ev.impact, t: 0, dur: CONFIG.eventDuration });
+}
+
+function updateEvents(dt){
+  const lead = S.insider ? 1 : 0;
+
+  if(!S.scheduledEvent && S.time >= S.nextEventTime - lead){
+    S.scheduledEvent = pickEvent();
+    if(lead > 0){
+      const d = S.scheduledEvent.impact > 0 ? 1 : -1;
+      showNotice("【内幕】" + S.scheduledEvent.name, d);
+    }
+  }
+
+  if(S.scheduledEvent && S.time >= S.nextEventTime){
+    const ev = S.scheduledEvent;
+    S.scheduledEvent = null;
+    S.nextEventTime += CONFIG.eventInterval;
+    applyEvent(ev);
+  }
+}
+
+/* =========================================================
+   价格冲击（2 秒内平滑实现）
+   ========================================================= */
+function applyShocks(dt){
+  for(let i = S.shocks.length - 1; i >= 0; i--){
+    const s = S.shocks[i];
+    const p0 = clamp(s.t / s.dur, 0, 1);
+    s.t += dt;
+    const p1 = clamp(s.t / s.dur, 0, 1);
+
+    const e0 = p0 * p0 * (3 - 2 * p0);
+    const e1 = p1 * p1 * (3 - 2 * p1);
+
+    const a0 = 1 + (s.m - 1) * e0;
+    const a1 = 1 + (s.m - 1) * e1;
+
+    if(a0 > 0) S.price *= a1 / a0;
+
+    if(p1 >= 1) S.shocks.splice(i, 1);
+  }
+}
+
+/* =========================================================
+   升级
+   ========================================================= */
+function showUpgradeModal(){
+  S.paused = true;
+
+  const pool = UPGRADES.filter(u => !S.upgradesTaken.includes(u.id));
+  if(pool.length === 0){ S.paused = false; return; }
+
+  const picks = [];
+  while(picks.length < 2 && pool.length > 0){
+    picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+
+  upgradeOptions.innerHTML = "";
+  picks.forEach(u => {
+    const btn = document.createElement("button");
+    btn.className = "upgrade-btn";
+    btn.innerHTML =
+      '<div class="up-name">' + u.name + '</div>' +
+      '<div class="up-desc">' + u.desc + '</div>';
+    btn.addEventListener("click", () => {
+      S.upgradesTaken.push(u.id);
+      u.apply();
+      upgradeModal.classList.add("hidden");
+      S.paused = false;
+    //   showNotice("已升级：" + u.name, 1);
+      beep(880, 0.1, "sine", 0.05);
+    });
+    upgradeOptions.appendChild(btn);
+  });
+
+  upgradeModal.classList.remove("hidden");
+  beep(520, 0.12, "sine", 0.05);
+}
+
+function updateUpgrades(){
+  if(S.time >= S.nextUpgradeTime && !S.paused){
+    S.nextUpgradeTime += CONFIG.upgradeInterval;
+    showUpgradeModal();
+  }
+}
+
+/* =========================================================
+   主更新
+   ========================================================= */
+function update(dt){
+  if(!S.running || S.paused) return;
+
+  S.time += dt;
+
+  /* --- 随机游走 --- */
+  const sigma = S.volatility;
+  const g = gaussian();
+  S.price *= Math.exp(-0.5 * sigma * sigma * dt + sigma * Math.sqrt(dt) * g);
+
+  /* --- 事件冲击 --- */
+  applyShocks(dt);
+
+  /* --- 事件调度 --- */
+  updateEvents(dt);
+
+  /* --- 升级调度 --- */
+  updateUpgrades();
+
+  /* --- 记录行情历史 --- */
+  S.history.push(S.price);
+  while(S.history.length > CONFIG.chartWindow) S.history.shift();
+
+  /* --- 记录资产历史（10Hz） --- */
+  S.equityTimer += dt;
+  if(S.equityTimer >= 0.1){
+    S.equityTimer -= 0.1;
+    S.equityHistory.push(equity());
+  }
+
+  /* --- 结束判定 --- */
+  if(equity() <= 0){
+    endGame("净值归零，强制平仓");
+    return;
+  }
+  if(S.time >= CONFIG.gameDuration){
+    S.time = CONFIG.gameDuration;
+    endGame("时间到，交易结束");
+    return;
+  }
+}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+function render(){
+  const eq = equity();
+
+  cashDisplay.textContent   = "￥" + fmt(eq);
+  chartPrice.textContent    = "￥" + fmt(S.price);
+  sharesDisplay.textContent = fmt(S.shares);
+  holdDisplay.textContent   = "￥" + fmt(posValue());
+
+  const remain = Math.max(0, CONFIG.gameDuration - S.time);
+  timerDisplay.textContent = Math.ceil(remain);
+  timerDisplay.style.color = remain <= 10 ? COLOR_UP : "#ffcc4d";
+
+  leverDisplay.textContent = S.leverage + "x";
+  leverDisplay.style.color = S.leverage > 1 ? COLOR_UP : "#dfeaf6";
+
+  // 价格数字按涨跌染色
+  const rising = S.history[S.history.length - 1] >= S.history[0];
+  chartPrice.style.color = rising ? COLOR_UP : COLOR_DOWN;
+
+  drawChart();
+}
+
+/* =========================================================
+   游戏循环
+   ========================================================= */
+function loop(ts){
+  if(!S.running) return;
+
+  const raw = (ts - S.lastTs) / 1000;
+  S.lastTs = ts;
+  const dt = Math.min(raw, 0.1);
+
+  if(!S.paused){
+    S.acc += dt;
+    const step = 1 / CONFIG.fps;
+    let guard = 0;
+    while(S.acc >= step && guard < 8){
+      update(step);
+      S.acc -= step;
+      guard++;
+      if(!S.running) break;
+    }
+    if(guard >= 8) S.acc = 0;
+  }
+
+  if(S.running) render();
+  requestAnimationFrame(loop);
+}
+
+/* =========================================================
+   开始 / 结束
+   ========================================================= */
+function startGame(){
+  resetState();
+
+  startScreen.classList.add("hidden");
+  overScreen.classList.add("hidden");
+  gameScreen.classList.remove("hidden");
+  upgradeModal.classList.add("hidden");
+
+  noticeBar.classList.remove("up","down");
+  noticeText.classList.remove("up","down");
+  noticeText.textContent = "市场开盘，祝你交易顺利";
+
+  S.running = true;
+  S.lastTs = performance.now();
+  S.acc = 0;
+
+  requestAnimationFrame(loop);
+}
+
+function endGame(reason){
+  if(!S.running) return;
+  S.running = false;
+  S.paused = false;
+  upgradeModal.classList.add("hidden");
+
+  S.equityHistory.push(equity());
+
+  const final  = equity();
+  const profit = final - CONFIG.initialCash;
+  const pct    = (profit / CONFIG.initialCash) * 100;
+
+  $("overReason").textContent = reason;
+  $("overFinal").textContent  = "￥" + fmt(final);
+
+  const pEl = $("overProfit");
+  pEl.textContent = (profit >= 0 ? "+" : "") + fmt(profit) + "  (" +
+                    (profit >= 0 ? "+" : "") + pct.toFixed(2) + "%)";
+  pEl.className = "over-profit " + (profit >= 0 ? "pos" : "neg");
+
+  gameScreen.classList.add("hidden");
+  overScreen.classList.remove("hidden");
+
+  requestAnimationFrame(() => {
+    drawEquityChart();
+  });
+
+  if(profit >= 0) beep(880, 0.12, "sine", 0.06);
+  else            beep(220, 0.25, "sine", 0.06);
+}
+
+/* =========================================================
+   输入绑定：长按连续交易
+   ========================================================= */
+function bindHold(el, action){
+  let delayTimer = null;
+  let repeatTimer = null;
+  let active = false;
+
+  const stop = () => {
+    active = false;
+    clearTimeout(delayTimer);
+    clearInterval(repeatTimer);
+    delayTimer = null;
+    repeatTimer = null;
+  };
+
+  const start = e => {
+    if(e.button !== undefined && e.button !== 0 && e.pointerType === "mouse") return;
+    e.preventDefault();
+    if(active) return;
+    active = true;
+    action();
+    delayTimer = setTimeout(() => {
+      repeatTimer = setInterval(() => {
+        if(!active) return;
+        action();
+      }, 80);
+    }, 300);
+  };
+
+  el.addEventListener("pointerdown", start);
+  el.addEventListener("pointerup", stop);
+  el.addEventListener("pointercancel", stop);
+  el.addEventListener("pointerleave", stop);
+  el.addEventListener("contextmenu", e => e.preventDefault());
+}
+
+bindHold($("buyBtn"),  doBuy);
+bindHold($("sellBtn"), doSell);
+
+/* =========================================================
+   按钮 & 事件
+   ========================================================= */
+$("startBtn").addEventListener("click", () => {
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+  }catch(e){}
+  startGame();
+});
+
+$("restartBtn").addEventListener("click", startGame);
+
+window.addEventListener("resize", () => {
+  if(S.running) drawChart();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) S.acc = 0;
+});
+
+/* 初始化一次开始界面 */
+resetState();
+</script>
+</body>
+</html>
