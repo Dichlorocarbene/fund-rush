@@ -257,9 +257,10 @@ body{display:flex;align-items:center;justify-content:center}
       <ul class="rules">
         <li>基金价格随机游走，每 5 秒触发一次行情事件</li>
         <li>事件弹出后，价格会在 2 秒内完成涨跌</li>
-        <li>每 30 秒可从两个升级中二选一（不重复）</li>
+        <li>每 30 秒可从两个升级中二选一</li>
         <li>Buy / Sell 按钮支持长按连续交易</li>
-        <li>使用杠杆时，净值归零将立刻结束游戏</li>
+        <li>使用杠杆时，净资产归零将立刻结束游戏</li>
+        <li>虚构内容，仅供娱乐</li>
       </ul>
       <button class="big-btn" id="startBtn">开 始 游 戏</button>
     </div>
@@ -280,7 +281,7 @@ body{display:flex;align-items:center;justify-content:center}
     </header>
 
     <div class="noticebar" id="noticeBar">
-      <div class="notice-text" id="noticeText">市场开盘，祝你交易顺利</div>
+      <div class="notice-text" id="noticeText">市场开盘</div>
     </div>
 
     <div class="chart-area">
@@ -308,7 +309,7 @@ body{display:flex;align-items:center;justify-content:center}
     <div class="modal hidden" id="upgradeModal">
       <div class="modal-box">
         <div class="modal-title">升 级 选 择</div>
-        <div class="modal-sub">二选一，效果不可重复</div>
+        <div class="modal-sub">二选一</div>
         <div id="upgradeOptions"></div>
       </div>
     </div>
@@ -337,19 +338,19 @@ body{display:flex;align-items:center;justify-content:center}
    ========================================================= */
 const CONFIG = {
   initialCash:    1000,    // 初始资金
-  initialPrice:   10,      // 基金初始价格
-  volatility:     0.01,    // 基础波动率（每 sqrt(秒)）
+  initialPrice:   100,      // 基金初始价格
+  volatility:     0.04,    // 基础波动率（每 sqrt(秒)）
   eventInterval:  5,       // 行情事件间隔（秒）
   eventDuration:  3,       // 事件涨跌实现时间（秒）
-  gameDuration:   150,     // 游戏时长（秒）
-  maxTradePct:    0.10,    // 单次交易最大比例（总资金 * 杠杆 * 该值）
-  baseLeverage:   1,       // 基础杠杆
-  maxLeverage:    5,       // 场外杠杆后的杠杆
+  gameDuration:   120,     // 游戏时长（秒）
+  maxTradePct:    0.30,    // 单次交易最大比例（总资金 * 杠杆 * 该值）
+  baseLeverage:   3,       // 基础杠杆
+  maxLeverage:    8,       // 场外杠杆后的杠杆
   fps:            60,      // 刷新率（可调整）
   chartWindow:    500,     // 行情图保留数据点数量
   upgradeInterval:30,      // 升级出现间隔（秒）
   pixelScale:     2,       // 像素化缩放倍数（改小可减弱像素风）
-  yPadding:       0.6,   // Y 轴上下各留出「数据跨度 * 该值」的空白，越大范围越宽
+  yPadding:       1.5,   // Y 轴上下各留出「数据跨度 * 该值」的空白，越大范围越宽
 };
 
 /* 涨跌配色（红涨绿跌） */
@@ -361,17 +362,29 @@ const FILL_DOWN  = "rgba(34,224,138,0.28)";
 /* =========================================================
    行情事件（5 正面 / 5 负面）
    ========================================================= */
+// const EVENTS = [
+//   { name: "央行降准，流动性宽松",   impact:  0.032 },
+//   { name: "北向资金大幅流入",       impact:  0.042 },
+//   { name: "基金重仓股涨停",         impact:  0.050 },
+//   { name: "行业利好政策出台",       impact:  0.045 },
+//   { name: "明星经理发行新基金",     impact:  0.025 },
+//   { name: "监管收紧，行业承压",     impact: -0.032 },
+//   { name: "外资大举撤离",           impact: -0.042 },
+//   { name: "重仓股闪崩",             impact: -0.050 },
+//   { name: "突发重大利空",           impact: -0.045 },
+//   { name: "基金经理离职传闻",       impact: -0.025 },
+// ];
 const EVENTS = [
-  { name: "央行降准，流动性宽松",   impact:  0.032 },
-  { name: "北向资金大幅流入",       impact:  0.042 },
-  { name: "基金重仓股涨停",         impact:  0.050 },
-  { name: "行业利好政策出台",       impact:  0.045 },
-  { name: "明星经理发行新基金",     impact:  0.025 },
-  { name: "监管收紧，行业承压",     impact: -0.032 },
-  { name: "外资大举撤离",           impact: -0.042 },
-  { name: "重仓股闪崩",             impact: -0.050 },
-  { name: "突发重大利空",           impact: -0.045 },
-  { name: "基金经理离职传闻",       impact: -0.025 },
+  { name: "央行降准，流动性宽松",   impact:  0.2 },
+  { name: "北向资金大幅流入",       impact:  0.2 },
+  { name: "基金重仓股涨停",         impact:  0.2 },
+  { name: "行业利好政策出台",       impact: 0.2 },
+  { name: "明星经理发行新基金",     impact:  0.2 },
+  { name: "监管收紧，行业承压",     impact: -0.1 },
+  { name: "外资大举撤离",           impact: -0.1 },
+  { name: "重仓股闪崩",             impact: -0.1 },
+  { name: "突发重大利空",           impact: -0.1 },
+  { name: "基金经理离职传闻",       impact: -0.1 },
 ];
 
 /* =========================================================
@@ -380,12 +393,12 @@ const EVENTS = [
 const UPGRADES = [
   { id:"insider",    name:"内幕消息",  desc:"行情事件消息提前 1 秒通知",
     apply(){ S.insider = true; } },
-  { id:"leverage",   name:"场外杠杆",  desc:"可以使用 5 倍杠杆进行交易",
+  { id:"leverage",   name:"场外杠杆",  desc:"可以使用更高杠杆进行交易",
     apply(){ S.leverage = CONFIG.maxLeverage; } },
-  { id:"lottery",    name:"彩票中签",  desc:"立刻获得 1000 资金",
-    apply(){ S.cash += 1000; } },
-  { id:"tax",        name:"税收征管",  desc:"每次过出（卖出）交易需缴税 2%",
-    apply(){ S.taxRate = 0.02; } },
+  { id:"lottery",    name:"彩票中签",  desc:"立刻获得 2000 资金",
+    apply(){ S.cash += 2000; } },
+  { id:"tax",        name:"税收豁免",  desc:"每次过出交易的2%税收将减免",
+    apply(){ S.taxRate = 0; } },
   { id:"volatility", name:"市场波动",  desc:"市场整体波动率翻倍",
     apply(){ S.volatility *= 2; } },
   { id:"bulk",       name:"大宗交易",  desc:"每次交易的规模翻倍",
@@ -469,7 +482,7 @@ function resetState(){
   S.volatility     = CONFIG.volatility;
   S.leverage       = CONFIG.baseLeverage;
   S.tradeMult      = 1;
-  S.taxRate        = 0;
+  S.taxRate        = 0.02;
   S.insider        = false;
 
   S.history        = new Array(CONFIG.chartWindow).fill(CONFIG.initialPrice);
@@ -882,7 +895,7 @@ function update(dt){
 
   /* --- 结束判定 --- */
   if(equity() <= 0){
-    endGame("净值归零，强制平仓");
+    endGame("杠杆有风险，使用需谨慎");
     return;
   }
   if(S.time >= CONFIG.gameDuration){
@@ -957,7 +970,7 @@ function startGame(){
 
   noticeBar.classList.remove("up","down");
   noticeText.classList.remove("up","down");
-  noticeText.textContent = "市场开盘，祝你交易顺利";
+  noticeText.textContent = "市场开盘";
 
   S.running = true;
   S.lastTs = performance.now();
