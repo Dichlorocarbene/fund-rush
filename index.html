@@ -258,7 +258,6 @@ body{display:flex;align-items:center;justify-content:center}
         <li>基金价格随机游走，每 5 秒触发一次行情事件</li>
         <li>事件弹出后，价格会在 2 秒内完成涨跌</li>
         <li>每 30 秒可从两个升级中二选一</li>
-        <li>Buy / Sell 按钮支持长按连续交易</li>
         <li>使用杠杆时，净资产归零将立刻结束游戏</li>
         <li>虚构内容，仅供娱乐</li>
       </ul>
@@ -343,7 +342,7 @@ const CONFIG = {
   eventInterval:  5,       // 行情事件间隔（秒）
   eventDuration:  3,       // 事件涨跌实现时间（秒）
   gameDuration:   120,     // 游戏时长（秒）
-  maxTradePct:    0.30,    // 单次交易最大比例（总资金 * 杠杆 * 该值）
+  maxTradePct:    0.25,    // 单次交易最大比例（总资金 * 杠杆 * 该值）
   baseLeverage:   3,       // 基础杠杆
   maxLeverage:    8,       // 场外杠杆后的杠杆
   fps:            60,      // 刷新率（可调整）
