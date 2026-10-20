@@ -20,7 +20,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
   height:100%;background:#05070a;overflow:hidden;
-  font-family:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  font-family:"sans-serif",Menlo,Consolas,"Microsoft YaHei",monospace;
   color:var(--text);
   overscroll-behavior:none;
   touch-action:manipulation;
@@ -69,7 +69,7 @@ body{display:flex;align-items:center;justify-content:center}
   padding:14px 16px;margin-bottom:24px;
 }
 .rules li{
-  font-size:12px;color:#8fa3b8;line-height:1.9;padding-left:14px;position:relative;
+  font-size:14px;color:#d78502;line-height:1.9;padding-left:14px;position:relative;
 }
 .rules li::before{
   content:"▸";position:absolute;left:0;color:var(--up);font-size:10px;
@@ -78,7 +78,7 @@ body{display:flex;align-items:center;justify-content:center}
   width:100%;padding:16px;
   background:linear-gradient(180deg,#ff5d7b,#c8203c);
   border:none;border-radius:8px;
-  color:#1a0208;font-family:inherit;font-weight:700;font-size:17px;letter-spacing:3px;
+  color:#1a0208;font-family:inherit;font-weight:700;font-size:24px;letter-spacing:3px;
   cursor:pointer;
   box-shadow:0 6px 0 #7a1226,0 0 24px rgba(255,77,109,.3);
   transition:transform .08s,box-shadow .08s;
@@ -99,10 +99,10 @@ body{display:flex;align-items:center;justify-content:center}
   color:var(--up);font-size:15px;
   text-shadow:0 0 10px rgba(255,77,109,.6);
 }
-.brand .name{color:#dfeaf6}
+.brand .name{font-size:14px;color:#dfeaf6}
 .cash-box{text-align:right;line-height:1.15}
-.cash-box .lbl{font-size:9px;color:var(--dim);letter-spacing:1px}
-.cash-box .val{font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+.cash-box .lbl{font-size:13px;color:var(--dim);letter-spacing:1px}
+.cash-box .val{font-size:25px;font-weight:700;color:var(--gold);letter-spacing:.5px}
 
 /* 通知栏 */
 .noticebar{
@@ -112,10 +112,10 @@ body{display:flex;align-items:center;justify-content:center}
   overflow:hidden;padding:0 10px;
   transition:border-color .25s,background .25s;
 }
-.noticebar.up{border-color:rgba(255,77,109,.6);background:rgba(255,77,109,.07)}
-.noticebar.down{border-color:rgba(34,224,138,.6);background:rgba(34,224,138,.07)}
+.noticebar.up{border-color:rgba(255,77,109,.6);background:rgba(254, 254, 86, 0.07)}
+.noticebar.down{border-color:rgba(34,224,138,.6);background:rgba(207, 241, 55, 0.07)}
 .notice-text{
-  font-size:11.5px;color:#8fa3b8;white-space:nowrap;
+  font-size:14px;color:#8fa3b8;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;
 }
 .notice-text.up{color:var(--up)}
@@ -187,7 +187,7 @@ body{display:flex;align-items:center;justify-content:center}
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-size:9px;color:var(--dim);letter-spacing:1px;line-height:1.5;
 }
-.holdinfo div{font-size:14px;font-weight:700;color:#dfeaf6;letter-spacing:.5px}
+.holdinfo div{font-size:18px;font-weight:700;color:#dfeaf6;letter-spacing:.5px}
 
 /* ---------- 升级弹窗 ---------- */
 .modal{
@@ -204,9 +204,9 @@ body{display:flex;align-items:center;justify-content:center}
   box-shadow:0 0 40px rgba(0,0,0,.7),0 0 0 1px rgba(255,77,109,.08) inset;
 }
 .modal-title{
-  font-size:13px;letter-spacing:4px;color:var(--up);text-align:center;margin-bottom:4px;
+  font-size:20px;font-weight:700;letter-spacing:4px;color:#ff3e3e;text-align:center;margin-bottom:4px;
 }
-.modal-sub{font-size:10px;color:var(--dim);text-align:center;margin-bottom:14px;letter-spacing:1px}
+.modal-sub{font-size:18px;color:#3ee5ff;text-align:center;margin-bottom:14px;letter-spacing:1px}
 .upgrade-btn{
   display:block;width:100%;text-align:left;
   background:var(--panel2);border:1px solid var(--line);border-radius:8px;
@@ -217,8 +217,8 @@ body{display:flex;align-items:center;justify-content:center}
 .upgrade-btn:last-child{margin-bottom:0}
 .upgrade-btn:active{transform:scale(.985);background:#16222f}
 .upgrade-btn:hover{border-color:rgba(255,77,109,.55)}
-.up-name{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:5px;letter-spacing:1px}
-.up-desc{font-size:11px;color:#7f95ab;line-height:1.6}
+.up-name{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:5px;letter-spacing:1px}
+.up-desc{font-size:15px;color:#3ee5ff;line-height:1.6}
 
 /* ---------- 结束界面 ---------- */
 #overScreen{
@@ -226,7 +226,7 @@ body{display:flex;align-items:center;justify-content:center}
   background:radial-gradient(120% 80% at 50% 0%,#1a1018 0%,#080b10 65%);
 }
 .over-inner{width:100%;max-width:340px;text-align:center}
-.over-title{font-size:22px;letter-spacing:5px;color:#eaf4ff;margin-bottom:4px}
+.over-title{font-size:24px;font-weight:700;letter-spacing:5px;color:#eaf4ff;margin-bottom:4px}
 .over-reason{font-size:11px;color:var(--up);letter-spacing:2px;margin-bottom:20px}
 .over-final{
   font-size:36px;font-weight:700;color:var(--gold);letter-spacing:1px;
@@ -247,16 +247,14 @@ body{display:flex;align-items:center;justify-content:center}
 </head>
 <body>
 <div id="app">
-
-  <!-- ========== 开始界面 ========== -->
   <div class="screen" id="startScreen">
     <div class="start-inner">
       <div class="start-logo">[￥]</div>
       <h1>FUND RUSH</h1>
-      <p class="sub">120 秒，1000 元本金，<br>在随机行情里赚到最多的钱。</p>
+      <p class="sub">120 秒，1000 元本金，<br>在随机行情里赚到最多资金。</p>
       <ul class="rules">
         <li>基金价格随机游走，每 5 秒触发一次行情事件</li>
-        <li>事件弹出后，价格会在 2 秒内完成涨跌</li>
+        <li>事件发生后，价格会在 2 秒内完成涨跌</li>
         <li>每 30 秒可从两个升级中二选一</li>
         <li>使用杠杆时，净资产归零将立刻结束游戏</li>
         <li>虚构内容，仅供娱乐</li>
